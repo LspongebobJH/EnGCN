@@ -13,7 +13,7 @@ from torch import Tensor
 from torch._C import _init_names
 from torch.nn import Linear
 from torch_geometric.data import Data
-from torch_geometric.loader.utils import filter_data, to_csc
+# from torch_geometric.loader.utils import filter_data, to_csc
 from torch_geometric.nn import SAGEConv
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.typing import EdgeType, NodeType

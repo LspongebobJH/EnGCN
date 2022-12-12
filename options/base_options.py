@@ -14,11 +14,12 @@ class BaseOptions:
             help="whether to get the memory usage and throughput",
         )
         parser.add_argument("--debug", action="store_true")
-        parser.add_argument("--tosparse", action="store_true")
+        parser.add_argument("--tosparse", action="store_true", default=True)
         parser.add_argument(
             "--dataset",
             type=str,
-            required=True,
+            # required=True,
+            default='ogbn-arxiv',
             choices=[
                 "Flickr",
                 "Reddit",
@@ -31,7 +32,8 @@ class BaseOptions:
         parser.add_argument(
             "--type_model",
             type=str,
-            required=True,
+            # required=True,
+            default='EnGCN',
             choices=[
                 "GraphSAGE",
                 "FastGCN",
