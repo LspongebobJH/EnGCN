@@ -8,6 +8,8 @@ from Precomputing.base import PrecomputingBase
 from torch_sparse import SparseTensor
 
 from .WeakLearners import MLP_SLE
+import wandb
+from copy import deepcopy
 
 
 class EnGCN(torch.nn.Module):
@@ -35,6 +37,7 @@ class EnGCN(torch.nn.Module):
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float("inf")] = 0
         self.adj_t = deg_inv_sqrt.view(-1, 1) * data.adj_t * deg_inv_sqrt.view(1, -1)
+        self.model_checkpoint = None
 
         del data, deg, deg_inv_sqrt
         gc.collect()
@@ -109,9 +112,11 @@ class EnGCN(torch.nn.Module):
                 device,
                 loss_op,
             )
-            self.model.load_state_dict(
-                torch.load(f"./.cache/{self.type_model}_{self.dataset}_MLP_SLE.pt")
-            )
+            # self.model.load_state_dict(
+            #     torch.load(f"./.cache/{self.type_model}_{self.dataset}_MLP_SLE.pt")
+            # )
+            if self.model_checkpoint:
+                self.model.load_state_dict(self.model_checkpoint)
 
             # make prediction
             use_label_mlp = False if i == 0 else self.use_label_mlp
@@ -147,6 +152,7 @@ class EnGCN(torch.nn.Module):
             del out
 
         out, acc = self.evaluate(results, y, split_masks)
+
         print(
             f"Final train acc: {acc['train']*100:.4f}, "
             f"Final valid acc: {acc['valid']*100:.4f}, "
@@ -209,11 +215,15 @@ class EnGCN(torch.nn.Module):
                     f"Valid acc: {acc['valid']*100:.4f}, "
                     f"Test acc: {acc['test']*100:.4f}"
                 )
+                
+                wandb.log({f'train_acc_{hop}': acc['train'], f'valid_acc_{hop}': acc['valid'], f'test_acc_{hop}': acc['test']})
+
                 if acc["valid"] > best_valid_acc:
                     best_valid_acc = acc["valid"]
-                    if not os.path.exists(".cache/"):
-                        os.mkdir(".cache/")
-                    torch.save(
-                        self.model.state_dict(),
-                        f"./.cache/{self.type_model}_{self.dataset}_MLP_SLE.pt",
-                    )
+                    self.model_checkpoint = deepcopy(self.model.state_dict())
+                    # if not os.path.exists(".cache/"):
+                    #     os.mkdir(".cache/")
+                    # torch.save(
+                    #     self.model.state_dict(),
+                    #     f"./.cache/{self.type_model}_{self.dataset}_MLP_SLE.pt",
+                    # )

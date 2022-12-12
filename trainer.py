@@ -72,7 +72,8 @@ class trainer(object):
     def __init__(self, args):
 
         self.dataset = args.dataset
-        self.device = torch.device(f"cuda:{args.cuda_num}" if args.cuda else "cpu")
+        # self.device = torch.device(f"cuda:{args.cuda_num}" if args.cuda else "cpu")
+        self.device = torch.device(f"cuda")
         self.args = args
         self.args.device = self.device
 
